@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/User/workspace/Projects/EduPilot-Ai/frontend/src/app/%28root%29/layout.tsx"],"sourcesContent":["import { ReactNode } from \"react\";\r\n\r\nexport default async function RootLayout({ children }: { children: ReactNode }) {\r\n  return (\r\n    <html lang=\"en\">\r\n      <body>\r\n        {children}\r\n      </body>\r\n    </html>\r\n  );\r\n}\r\n"],"names":[],"mappings":";;;;;;AAEe,eAAe,WAAW,EAAE,QAAQ,EAA2B;IAC5E,qBACE,8OAAC;QAAK,MAAK;kBACT,cAAA,8OAAC;sBACE;;;;;;;;;;;AAIT"}}]
+}
