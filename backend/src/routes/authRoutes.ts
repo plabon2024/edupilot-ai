@@ -6,8 +6,8 @@ import {
   getProfile,
   updateProfile,
   changePassword,
-} from "../controllers/authController.js";
-import protect from "../middleware/auth.js";
+} from "../controllers/authController";
+import protect from "../middleware/auth";
 
 const router = express.Router();
 const registerValidation = [
@@ -39,4 +39,6 @@ router.get("/profile", protect, getProfile);
 router.get("/profile", protect, updateProfile);
 router.get("/change-password", protect, changePassword);
 
-export default router;
+
+
+export const authRoute = router;

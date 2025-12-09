@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-const QuizSchema = new Schema({
+const quizSchema = new Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -25,7 +25,7 @@ const QuizSchema = new Schema({
         type: [String],
         required: true,
         validate: [
-          (array) => array.length === 4,
+          (array: any[]) => array.length === 4,
           "Must have exactily 4 options",
         ],
       },
@@ -58,9 +58,29 @@ const QuizSchema = new Schema({
         type: Boolean,
         required: true,
       },
-      answeredAt:{
-        type
-      }
+      answeredAt: {
+        type: Date,
+        default: Date.now(),
+      },
     },
   ],
-});
+
+  score: {
+    type: Number,
+    default: 0,
+  },
+  totalQuestion: {
+    type: Number,
+    required: true,
+  },
+  completedAt: {
+    type: Date,
+    default: null,
+  },
+},
+  { timestamps: true, }
+);
+// imdex for fastert queriss
+quizSchema.index({userID:1,documentId:1})
+const Quiz=mongoose.model("Quiz",quizSchema)
+export default Quiz
