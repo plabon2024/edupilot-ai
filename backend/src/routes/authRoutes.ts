@@ -36,8 +36,8 @@ router.post("/register", registerValidation, register);
 router.post("/login", loginValidation, login);
 
 router.get("/profile", protect, getProfile);
-router.get("/profile", protect, updateProfile);
-router.get("/change-password", protect, changePassword);
+router.put("/profile", protect, updateProfile);
+router.post("/change-password", protect, changePassword);
 
 
 

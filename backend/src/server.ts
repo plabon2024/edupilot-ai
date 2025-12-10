@@ -30,12 +30,12 @@ const PORT = config.port || 8000;
   app.use(express.urlencoded({ extended: true }));
 
   app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
+  // route
+  app.use("/api/auth", authRoute);
   // error handler
   app.use(errorHandler);
 
-  // route
-  app.use("/api/auth", authRoute);
+
   // 404
   app.use((req, res) => {
     res.status(404).json({

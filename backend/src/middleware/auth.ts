@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
-import User from "../models/User";
+import User from "../models/User.js"; // be consistent: .js if compiled to JS
 import { NextFunction, Request, Response } from "express";
-import config from "../config/env";
+import config from "../config/env.js";
 
 const protect = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
@@ -25,11 +25,11 @@ const protect = async (req: Request, res: Response, next: NextFunction) => {
   }
 
   try {
-    const decoded = jwt.verify(token, config.jwtSecret) as any;
+    const decoded = jwt.verify(token, config.jwtSecret) as { id: string };
 
-    req.user = await User.findById(decoded.id).select("-password");
+    const user = await User.findById(decoded.id).select("-password");
 
-    if (!req.user) {
+    if (!user) {
       return res.status(401).json({
         success: false,
         error: "User not found",
@@ -37,7 +37,14 @@ const protect = async (req: Request, res: Response, next: NextFunction) => {
       });
     }
 
-    next();
+    req.user = {
+      _id: user._id.toString(),
+      username: user.username,
+      email: user.email,
+      profileImage: user.profileImage,
+    };
+
+     next();
   } catch (error: any) {
     if (error.name === "TokenExpiredError") {
       return res.status(401).json({
@@ -53,6 +60,8 @@ const protect = async (req: Request, res: Response, next: NextFunction) => {
       statusCode: 401,
     });
   }
+
+ 
 };
 
-  export default protect
+export default protect;
