@@ -8,6 +8,7 @@ import connectDB from "./config/db";
 import errorHandler from "./middleware/errorHandler";
 import config from "./config/env";
 import { authRoute } from "./routes/authRoutes";
+import { documentRoute } from "./routes/documentRoutes";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -33,6 +34,7 @@ const PORT = config.port || 8000;
   // route
   app.use("/api/auth", authRoute);
   // error handler
+    app.use("/api/documents", documentRoute);
   app.use(errorHandler);
 
 

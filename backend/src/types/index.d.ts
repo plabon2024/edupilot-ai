@@ -1,12 +1,9 @@
+
 import { Request } from "express";
 import { JwtPayload } from "jsonwebtoken";
 
 declare global {
   namespace Express {
-    interface Request {
-      id: JwtPayload;
-     
-    }
     interface UserPayload {
       _id: string;
       username?: string;
@@ -14,7 +11,10 @@ declare global {
       profileImage?: string | null;
     }
 
+    // ✅ Only one Request interface
     interface Request {
-      user?: UserPayload; 
+      id?: JwtPayload; // Make optional
+      user?: UserPayload;
+    }
   }
 }
