@@ -37,10 +37,9 @@ export const updateDocument = async (
       });
     }
 
-    // Build an accessible file URL (adjust as needed for production)
-    const baseUrl = `http://localhost:${config.port}`;
+    // const baseUrl = `http://localhost:${config.port}`;
     // inside updateDocument (patch)
-    const publicFileUrl = `${baseUrl}/uploads/documents/${req.file.filename}`;
+    const publicFileUrl = `${config.baseUrl}/uploads/documents/${req.file.filename}`;
     const fileSystemPath = req.file.path; // ensure available
 
     const document = await Document.create({

@@ -9,5 +9,6 @@ const config = {
   nodeEnv: process.env.NODE_ENV as string,
   fileSize: process.env.MAX_FILE_SIZE,
   dbName: process.env.DB_NAME as string,
+  baseUrl:process.env.baseUrl
 };
 export default config;
