@@ -17,7 +17,7 @@ router.use(protect);
 
 // UPLOAD PDF → /documents/upload
 // documentRoutes.ts
-router.post("/upload", (req, res) => upload.single("file"), updateDocument);
+router.post("/upload", upload.single("file"), updateDocument);
 // GET ALL DOCUMENTS → /documents
 router.get("/", getDocuments);
 
