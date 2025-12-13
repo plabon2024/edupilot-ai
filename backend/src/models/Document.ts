@@ -1,4 +1,4 @@
-import mongoose, { now } from "mongoose";
+import mongoose from "mongoose";
 
 const documentSchema = new mongoose.Schema({
   userId: {
@@ -16,6 +16,10 @@ const documentSchema = new mongoose.Schema({
     required: true,
   },
   filePath: {
+    type: String,
+    required: true,
+  },
+  fileSystemPath: {  // ✅ ADD THIS FIELD
     type: String,
     required: true,
   },
@@ -56,9 +60,13 @@ const documentSchema = new mongoose.Schema({
     enum: ["processing", "ready", "failed"],
     default: "processing",
   },
+
 },{
-    timestamps:true
+    timestamps: true
 });
-documentSchema.index({ userId: 1, documentId: -1 });
+
+// ✅ FIX INDEX - change documentId to uploadDate
+documentSchema.index({ userId: 1, uploadDate: -1 });
+
 const Document = mongoose.model("Document", documentSchema);
 export default Document;

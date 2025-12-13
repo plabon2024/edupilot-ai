@@ -2,14 +2,13 @@ import fs from "fs/promises";
 import path from "path";
 import mongoose from "mongoose";
 import { NextFunction, Request, Response } from "express";
-import config from "../config/env";
+
 import Document from "../models/Document";
 import { extractTextFromPDF } from "../utils/pdfParser";
 import { chunkText } from "../utils/textChunker";
 import Flashcard from "../models/Flashcard";
 import Quiz from "../models/Quiz";
-
-
+import config from "../config/env";
 
 /* ----------------------------- create / update ---------------------------- */
 
@@ -37,17 +36,15 @@ export const updateDocument = async (
       });
     }
 
-    // const baseUrl = `http://localhost:${config.port}`;
-    // inside updateDocument (patch)
-    const publicFileUrl = `${config.baseUrl}/uploads/documents/${req.file.filename}`;
-    const fileSystemPath = req.file.path; // ensure available
+    const relativePath = `/uploads/documents/${req.file.filename}`;
+    const fileSystemPath = req.file.path;
 
     const document = await Document.create({
       userId: (req as any).user?._id ?? null,
       title: title.trim(),
       fileName: req.file.originalname,
-      filePath: publicFileUrl,
-      fileSystemPath, // ensure model includes this field
+      filePath: relativePath,
+      fileSystemPath,
       fileSize: req.file.size ?? "unknown",
       status: "processing",
       uploadDate: new Date(),
