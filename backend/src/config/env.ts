@@ -5,8 +5,8 @@ dotenv.config({ path: path.join(process.cwd(), ".env") });
 
 const config = {
   databaseUrl: process.env.MONGODB_URI as string,
-  jwtSecret: process.env.JWT_SECRET as string,
-  jwtExpire: process.env.JWT_EXPIRE as string,
+  jwtSecret: process.env.JWT_SECRET as any,
+  jwtExpire: process.env.JWT_EXPIRE as any,
   port: process.env.PORT ? Number(process.env.PORT) : 5000,
   nodeEnv: process.env.NODE_ENV ?? "development",
   fileSize: process.env.MAX_FILE_SIZE
