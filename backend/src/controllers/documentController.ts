@@ -1,5 +1,5 @@
 import fs from "fs/promises";
-import path from "path";
+
 import mongoose from "mongoose";
 import { NextFunction, Request, Response } from "express";
 
@@ -8,7 +8,9 @@ import { extractTextFromPDF } from "../utils/pdfParser";
 import { chunkText } from "../utils/textChunker";
 import Flashcard from "../models/Flashcard";
 import Quiz from "../models/Quiz";
-import config from "../config/env";
+
+import cloudinary from "../config/cloudinary";
+import { uploadPDFToCloudinary } from "../utils/cloudinaryUploader";
 
 /* ----------------------------- create / update ---------------------------- */
 
@@ -18,7 +20,6 @@ export const updateDocument = async (
   next: NextFunction
 ) => {
   try {
-    // Validate file presence
     if (!req.file) {
       return res.status(400).json({
         success: false,
@@ -28,42 +29,42 @@ export const updateDocument = async (
 
     const { title } = req.body;
     if (!title || typeof title !== "string" || title.trim().length === 0) {
-      // If missing title, delete uploaded file and return error
-      await fs.unlink(req.file.path).catch(() => {});
+      await fs.unlink(req.file.path).catch(() => { });
       return res.status(400).json({
         success: false,
         error: "Provide a document title.",
       });
     }
 
-    const relativePath = `/uploads/documents/${req.file.filename}`;
-    const fileSystemPath = req.file.path;
+    /** 1️⃣ Upload to Cloudinary */
+    const cloudinaryResult = await uploadPDFToCloudinary(req.file.path);
 
+    /** 2️⃣ Create DB record */
     const document = await Document.create({
       userId: (req as any).user?._id ?? null,
       title: title.trim(),
       fileName: req.file.originalname,
-      filePath: relativePath,
-      fileSystemPath,
+      filePath: cloudinaryResult.secure_url,
+      cloudinaryPublicId: cloudinaryResult.public_id,
       fileSize: req.file.size ?? "unknown",
       status: "processing",
       uploadDate: new Date(),
     });
 
-    // Start processing in background
-    processPDF(document._id.toString(), fileSystemPath).catch((err) => {
-      console.error("Unexpected error launching processPDF:", err);
-    });
+    /** 3️⃣ Process PDF FIRST */
+    console.log("processing from ", req.file.path);
+    await processPDF(document._id.toString(), req.file.path);
+    /** 4️⃣ Delete local file AFTER processing */
+    await fs.unlink(req.file.path).catch(() => { });
 
     return res.status(201).json({
       success: true,
       data: document,
-      message: "Document created and processing started.",
+      message: "Document uploaded to cloud and processing started.",
     });
   } catch (error) {
-    // If an error occurred and a file was uploaded, remove it
-    if (req.file && req.file.path) {
-      await fs.unlink(req.file.path).catch(() => {});
+    if (req.file?.path) {
+      await fs.unlink(req.file.path).catch(() => { });
     }
     next(error);
   }
@@ -76,14 +77,14 @@ const processPDF = async (
   filePath: string
 ): Promise<void> => {
   try {
-    // Defensive: ensure filePath is a filesystem path, not a URL
+
     if (typeof filePath !== "string" || filePath.startsWith("http")) {
       throw new Error(
         `processPDF expected a local filesystem path; got: ${filePath}`
       );
     }
 
-    // Ensure file exists and read meta
+
     await fs.access(filePath);
     const stat = await fs.stat(filePath);
     if (stat.size === 0) {
@@ -93,7 +94,7 @@ const processPDF = async (
     // Extract text
     const { text } = await extractTextFromPDF(filePath);
 
-    // If pdf-parse returned no text, record that explicitly
+
     if (!text || text.trim().length === 0) {
       await Document.findByIdAndUpdate(
         documentId,
@@ -151,7 +152,6 @@ export const getDocuments = async (
       return res.status(401).json({ success: false, error: "Unauthorized" });
     }
 
-    // Aggregation pipeline to get documents with counts for flashcards and quizzes
     const documents = await Document.aggregate([
       {
         $match: { userId: new mongoose.Types.ObjectId(userId) },
@@ -159,7 +159,7 @@ export const getDocuments = async (
       {
         // lookup flashcards
         $lookup: {
-          from: "flashcards", // collection name
+          from: "flashcards",
           localField: "_id",
           foreignField: "documentId",
           as: "flashcardSets",
@@ -273,7 +273,7 @@ export const deleteDocument = async (
 
     const document = await Document.findOne({
       _id: req.params.id,
-      userId: userId,
+      userId,
     }).exec();
 
     if (!document) {
@@ -283,22 +283,14 @@ export const deleteDocument = async (
       });
     }
 
-    // Delete file from filesystem if we have a local path stored
-    const fileSystemPath = (document as any).fileSystemPath as
-      | string
-      | undefined;
 
-    if (fileSystemPath) {
-      // Ensure path looks local (defensive)
-      const isLocal =
-        !fileSystemPath.startsWith("http://") &&
-        !fileSystemPath.startsWith("https://");
-      if (isLocal) {
-        await fs.unlink(fileSystemPath).catch(() => {});
-      }
+    if (document.cloudinaryPublicId) {
+      await cloudinary.uploader.destroy(document.cloudinaryPublicId, {
+        resource_type: "raw",
+      });
+      console.log(document.cloudinaryPublicId)
     }
 
-    // Delete document record
     await document.deleteOne();
 
     return res.status(200).json({

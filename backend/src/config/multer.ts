@@ -1,16 +1,22 @@
 import multer, { FileFilterCallback } from "multer";
 import { Request } from "express";
 import path from "path";
-import { fileURLToPath } from "url";
+
 import fs from "fs";
 import config from "./env";
 
 // Resolve paths
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 // Ensure upload directory exists
-const uploadDir = path.join(__dirname, "../uploads/documents");
+// const uploadDir = path.join(__dirname, "../uploads/documents");
+// if (!fs.existsSync(uploadDir)) {
+//   fs.mkdirSync(uploadDir, { recursive: true });
+// }
+
+
+const uploadDir = path.join(process.cwd(), "uploads", "documents");
+
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -26,7 +32,7 @@ const storage = multer.diskStorage({
   },
 });
 
-// File filter (only PDFs)
+
 const fileFilter = (
   req: Request,
   file: Express.Multer.File,

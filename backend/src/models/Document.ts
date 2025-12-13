@@ -1,69 +1,75 @@
 import mongoose from "mongoose";
 
-const documentSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  title: {
-    type: String,
-    required: [true, "please provide a document title"],
-    trim: true,
-  },
-  fileName: {
-    type: String,
-    required: true,
-  },
-  filePath: {
-    type: String,
-    required: true,
-  },
-  fileSystemPath: {  // ✅ ADD THIS FIELD
-    type: String,
-    required: true,
-  },
-  fileSize: {
-    type: Number,
-    required: true,
-  },
-  extractedText: {
-    type: String,
-    default: "",
-  },
-  chunks: [
-    {
-      content: {
-        type: String,
-        required: true,
-      },
-      pageNumber: {
-        type: Number,
-        default: 0,
-      },
-      chunkIndex: {
-        type: Number,
-        required: true,
-      },
+const documentSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-  ],
-  uploadDate: {
-    type: Date,
-    default: Date.now,
+    title: {
+      type: String,
+      required: [true, "please provide a document title"],
+      trim: true,
+    },
+    fileName: {
+      type: String,
+      required: true,
+    },
+    cloudinaryPublicId: {
+      type: String,
+      required: true,
+    },
+    filePath: {
+      type: String,
+      required: true,
+    },
+    fileSystemPath: {
+      type: String,
+      required: false,
+    },
+    fileSize: {
+      type: Number,
+      required: true,
+    },
+    extractedText: {
+      type: String,
+      default: "",
+    },
+    chunks: [
+      {
+        content: {
+          type: String,
+          required: true,
+        },
+        pageNumber: {
+          type: Number,
+          default: 0,
+        },
+        chunkIndex: {
+          type: Number,
+          required: true,
+        },
+      },
+    ],
+    uploadDate: {
+      type: Date,
+      default: Date.now,
+    },
+    lastAccessed: {
+      type: Date,
+      default: Date.now,
+    },
+    status: {
+      type: String,
+      enum: ["processing", "ready", "failed"],
+      default: "processing",
+    },
   },
-  lastAccessed: {
-    type: Date,
-    default: Date.now,
-  },
-  status: {
-    type: String,
-    enum: ["processing", "ready", "failed"],
-    default: "processing",
-  },
-
-},{
-    timestamps: true
-});
+  {
+    timestamps: true,
+  }
+);
 
 // ✅ FIX INDEX - change documentId to uploadDate
 documentSchema.index({ userId: 1, uploadDate: -1 });

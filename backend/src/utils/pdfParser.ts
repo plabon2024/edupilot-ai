@@ -3,7 +3,6 @@ import { PDFParse } from "pdf-parse";
 export const extractTextFromPDF = async (filePath: string) => {
   try {
     const dataBuffer = await fs.readFile(filePath);
-    console.log(dataBuffer);
     if (!dataBuffer || dataBuffer.length === 0) {
       throw new Error("File buffer is empty");
     }
