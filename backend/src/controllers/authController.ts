@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
 
-import User from "../models/User.js";
 import { NextFunction, Request, Response } from "express";
-import config from "../config/env.js";
+import config from "../config/env";
+import User from "../models/User";
 
 const generateToken = (id: any) => {
   return jwt.sign({ id }, config.jwtSecret, {
@@ -141,7 +141,11 @@ export const getProfile = async (
   }
 };
 
-export const updateProfile = async (req: Request, res: Response, next: NextFunction) => {
+export const updateProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     if (!req.user?._id) {
       return res.status(401).json({
@@ -185,7 +189,6 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
     next(error);
   }
 };
-
 
 export const changePassword = async (
   req: Request,
@@ -241,4 +244,3 @@ export const changePassword = async (
     next(error);
   }
 };
-

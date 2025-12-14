@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/User/workspace/Projects/edupilot-ai/src/app/%28root%29/%28protected%29/layout.tsx"],"sourcesContent":["\r\nimport { ReactNode } from \"react\";\r\n// import { redirect } from \"next/navigation\";\r\n\r\n\r\nexport default async function ProtectedLayout({\r\n  children,\r\n}: {\r\n  children: ReactNode;\r\n}) {\r\n//   const user = await getCurrentUser();\r\n\r\n//   if (!user) {\r\n//     redirect(\"/login\");\r\n//   }\r\n\r\n  return <>{children}</>;\r\n}\r\n"],"names":[],"mappings":";;;;;;AAKe,eAAe,gBAAgB,EAC5C,QAAQ,EAGT;IACD,yCAAyC;IAEzC,iBAAiB;IACjB,0BAA0B;IAC1B,MAAM;IAEJ,qBAAO;kBAAG;;AACZ"}}]
-}
