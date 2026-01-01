@@ -39,6 +39,7 @@ backend/coverage
 backend/build
 backend/*.tsbuildinfo
 backend/dist
+backend/.vercel
 
 backend/src/uploads
 

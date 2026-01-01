@@ -1,86 +1,60 @@
 import mongoose, { Schema } from "mongoose";
-const quizSchema = new Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  documentId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Document",
-    required: true,
-  },
-  title: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  questions: [
-    {
-      question: {
-        type: String,
-        required: true,
-      },
-      options: {
-        type: [String],
-        required: true,
-        validate: [
-          (array: any[]) => array.length === 4,
-          "Must have exactily 4 options",
-        ],
-      },
-      correctAnswer: {
-        type: String,
-        required: true,
-      },
-      explaination: {
-        type: String,
-        default: "",
-      },
-      difficulty: {
-        type: String,
-        enum: ["easy", "medium", "hard"],
-        default: "medium",
-      },
+const quizSchema = new Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-  ],
-  userAnswer: [
-    {
-      questionIndex: {
-        type: Number,
-        required: true,
-      },
-      selectedAnswer: {
-        type: String,
-        required: true,
-      },
-      isCorrect: {
-        type: Boolean,
-        required: true,
-      },
-      answeredAt: {
-        type: Date,
-        default: Date.now(),
-      },
+    documentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Document",
+      required: true,
     },
-  ],
-
-  score: {
-    type: Number,
-    default: 0,
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    questions: [
+      {
+        question: { type: String, required: true },
+        options: {
+          type: [String],
+          required: true,
+          validate: [
+            (arr: string[]) => arr.length === 4,
+            "Must have exactly 4 options",
+          ],
+        },
+        correctAnswer: { type: String, required: true },
+        explanation: { type: String, default: "" },
+        difficulty: {
+          type: String,
+          enum: ["easy", "medium", "hard"],
+          default: "medium",
+        },
+      },
+    ],
+    userAnswers: [
+      {
+        questionIndex: Number,
+        selectedAnswer: String,
+        isCorrect: Boolean,
+        answeredAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    score: { type: Number, default: 0 },
+    totalQuestions: { type: Number, required: true },
+    completedAt: { type: Date, default: null },
   },
-  totalQuestion: {
-    type: Number,
-    required: true,
-  },
-  completedAt: {
-    type: Date,
-    default: null,
-  },
-},
-  { timestamps: true, }
+  { timestamps: true }
 );
-// imdex for fastert queriss
-quizSchema.index({userID:1,documentId:1})
+
+quizSchema.index({ userId: 1, documentId: 1 });
+
 const Quiz=mongoose.model("Quiz",quizSchema)
 export default Quiz
