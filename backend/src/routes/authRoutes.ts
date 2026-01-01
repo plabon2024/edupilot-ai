@@ -39,6 +39,4 @@ router.get("/profile", protect, getProfile);
 router.put("/profile", protect, updateProfile);
 router.post("/change-password", protect, changePassword);
 
-
-
 export const authRoute = router;

@@ -40,6 +40,7 @@ const PORT = config.port || 8000;
   // flashcards handler
   app.use("/api/flashcards", flashcardRoutes);
   app.use("/api/ai", aiRoutes);
+  // app.use("/api/quizzes",quizes );
   app.use(errorHandler);
 
   // 404
