@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import Flashcard from "../models/Flashcard";
+import mongoose from "mongoose";
 
 // Helper: get authenticated user id
 
@@ -24,8 +25,8 @@ export const getFlashcards = async (
     if (!userId) return;
 
     const flashcards = await Flashcard.find({
-      userId,
-      documentId: req.params.documentId,
+       userId: new mongoose.Types.ObjectId(userId),
+      documentId: new mongoose.Types.ObjectId(req.params.documentId),
     })
       .populate("documentId", "title fileName")
       .sort({ createdAt: -1 });
@@ -76,7 +77,12 @@ export const reviewFlashcard = async (
     if (!userId) return;
 
     const cardId = req.params.cardId;
-
+    if (!cardId) {
+      return res.status(400).json({
+        success: false,
+        error: "cardId is required",
+      });
+    }
     const flashcardSet = await Flashcard.findOne({
       userId,
       "cards._id": cardId,
@@ -124,7 +130,12 @@ export const toggleStarFlashcard = async (
     if (!userId) return;
 
     const cardId = req.params.cardId;
-
+    if (!cardId) {
+      return res.status(400).json({
+        success: false,
+        error: "cardId is required",
+      });
+    }
     const flashcardSet = await Flashcard.findOne({
       userId,
       "cards._id": cardId,

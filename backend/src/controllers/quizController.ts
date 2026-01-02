@@ -1,6 +1,6 @@
-import { NextFunction, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
+import mongoose from 'mongoose';
 import Quiz from '../models/Quiz';
-
 
 export const getQuizzes = async (
   req: Request,
@@ -9,8 +9,8 @@ export const getQuizzes = async (
 ) => {
   try {
     const quizzes = await Quiz.find({
-      userId: req.user!._id,
-      documentId: req.params.documentId,
+      userId: new mongoose.Types.ObjectId(req.user!._id),
+      documentId: new mongoose.Types.ObjectId(req.params.documentId),
     })
       .populate("documentId", "title fileName")
       .sort({ createdAt: -1 });
@@ -25,8 +25,6 @@ export const getQuizzes = async (
   }
 };
 
-
-
 export const getQuizById = async (
   req: Request,
   res: Response,
@@ -34,8 +32,8 @@ export const getQuizById = async (
 ) => {
   try {
     const quiz = await Quiz.findOne({
-      _id: req.params.id,
-      userId: req.user!._id,
+      _id: new mongoose.Types.ObjectId(req.params.id),
+      userId: new mongoose.Types.ObjectId(req.user!._id),
     });
 
     if (!quiz) {
@@ -54,11 +52,6 @@ export const getQuizById = async (
   }
 };
 
-
-
-
-
-
 export const submitQuiz = async (
   req: Request,
   res: Response,
@@ -75,8 +68,8 @@ export const submitQuiz = async (
     }
 
     const quiz = await Quiz.findOne({
-      _id: req.params.id,
-      userId: req.user!._id,
+      _id: new mongoose.Types.ObjectId(req.params.id),
+      userId: new mongoose.Types.ObjectId(req.user!._id),
     });
 
     if (!quiz) {
@@ -95,8 +88,8 @@ export const submitQuiz = async (
 
     const totalQuestions = quiz.questions.length;
     let correctCount = 0;
-    const userAnswers = [];
     const answeredIndices = new Set<number>();
+    quiz.userAnswers.splice(0, quiz.userAnswers.length);
 
     for (const entry of answers) {
       const { questionIndex, selectedAnswer } = entry;
@@ -122,11 +115,17 @@ export const submitQuiz = async (
       answeredIndices.add(questionIndex);
 
       const question = quiz.questions[questionIndex];
+      if (!question) {
+  return res.status(400).json({
+    success: false,
+    error: "Invalid question index",
+  });
+}
       const isCorrect = selectedAnswer === question.correctAnswer;
 
       if (isCorrect) correctCount++;
 
-      userAnswers.push({
+      quiz.userAnswers.push({
         questionIndex,
         selectedAnswer,
         isCorrect,
@@ -144,7 +143,6 @@ export const submitQuiz = async (
 
     const score = Math.round((correctCount / totalQuestions) * 100);
 
-    quiz.userAnswers = userAnswers;
     quiz.score = score;
     quiz.completedAt = new Date();
 
@@ -158,7 +156,7 @@ export const submitQuiz = async (
         score,
         correctCount,
         totalQuestions,
-        userAnswers,
+        userAnswers: quiz.userAnswers,
       },
     });
   } catch (error) {
@@ -166,25 +164,89 @@ export const submitQuiz = async (
   }
 };
 
+export const getQuizResults = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const quiz = await Quiz.findOne({
+      _id: new mongoose.Types.ObjectId(req.params.id),
+      userId: new mongoose.Types.ObjectId(req.user!._id),
+    }).populate('documentId', 'title');
 
-
-
-
-
-
-
-export const getQuizResults = async (req: Request, res: Response, next: NextFunction){
-
-    try {
-
-    } catch (error) {
-        next(error)
+    if (!quiz) {
+      return res.status(404).json({
+        success: false,
+        error: 'Quiz not found',
+      });
     }
-}
-export const deleteQuiz = async (req: Request, res: Response, next: NextFunction){
-    try {
 
-    } catch (error) {
-        next(error)
+    if (!quiz.completedAt) {
+      return res.status(400).json({
+        success: false,
+        error: 'Quiz not completed',
+      });
     }
-}
+
+    // Build detailed results
+    const detailedResults = quiz.questions.map((question, index) => {
+      const userAnswer = quiz.userAnswers.find((a: any) => a.questionIndex === index);
+      return {
+        questionIndex: index,
+        question: question.question,
+        options: question.options,
+        correctAnswer: question.correctAnswer,
+        selectedAnswer: userAnswer?.selectedAnswer || null,
+        isCorrect: userAnswer?.isCorrect || false,
+        explanation: question.explanation,
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        quiz: {
+          id: quiz._id,
+          title: quiz.title,
+          document: quiz.documentId,
+          score: quiz.score,
+          totalQuestions: quiz.questions.length,
+          completedAt: quiz.completedAt,
+        },
+        results: detailedResults,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteQuiz = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const quiz = await Quiz.findOne({
+      _id: new mongoose.Types.ObjectId(req.params.id),
+      userId: new mongoose.Types.ObjectId(req.user!._id),
+    });
+
+    if (!quiz) {
+      return res.status(404).json({
+        success: false,
+        error: 'Quiz not found',
+      });
+    }
+
+    await quiz.deleteOne();
+
+    res.status(200).json({
+      success: true,
+      message: 'Quiz deleted successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};

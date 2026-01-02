@@ -5,12 +5,14 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 import connectDB from "./config/db";
-import errorHandler from "./middleware/errorHandler";
 import config from "./config/env";
+import errorHandler from "./middleware/errorHandler";
+import { aiRoutes } from "./routes/aiRoutes";
 import { authRoute } from "./routes/authRoutes";
 import { documentRoute } from "./routes/documentRoutes";
-import {  flashcardRoutes } from "./routes/flashcardRoutes";
-import { aiRoutes } from "./routes/aiRoutes";
+import { flashcardRoutes } from "./routes/flashcardRoutes";
+import { progressRoutes } from "./routes/progressRoutes";
+import { quizRoutes } from "./routes/quizRoutes";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,7 +42,8 @@ const PORT = config.port || 8000;
   // flashcards handler
   app.use("/api/flashcards", flashcardRoutes);
   app.use("/api/ai", aiRoutes);
-  // app.use("/api/quizzes",quizes );
+  app.use("/api/quizzes", quizRoutes);
+  app.use("/api/progress", progressRoutes);
   app.use(errorHandler);
 
   // 404
